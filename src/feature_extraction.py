@@ -286,7 +286,17 @@ class ApplicationFeatures(BaseTransformer):
 
 
 class BureauFeatures(BasicHandCraftedFeatures):
+    def __init__(self, last_k_agg_periods, last_k_trend_periods, num_workers=1, **kwargs):
+        super().__init__(num_workers=num_workers)
+        self.last_k_agg_periods = last_k_agg_periods
+        self.last_k_trend_periods = last_k_trend_periods
+
+        self.num_workers = num_workers
+        self.features = None
+
     def fit(self, bureau, **kwargs):
+        bureau.sort_values(['SK_ID_CURR', 'DAYS_CREDIT'], ascending=False, inplace=True)
+        bureau['days_credit_diff'] = bureau['DAYS_CREDIT'].diff().replace(np.nan, 0)
         bureau['bureau_credit_active_binary'] = (bureau['CREDIT_ACTIVE'] != 'Closed').astype(int)
         bureau['bureau_credit_enddate_binary'] = (bureau['DAYS_CREDIT_ENDDATE'] > 0).astype(int)
         features = pd.DataFrame({'SK_ID_CURR': bureau['SK_ID_CURR'].unique()})
@@ -325,7 +335,20 @@ class BureauFeatures(BasicHandCraftedFeatures):
         g.rename(index=str, columns={'bureau_credit_enddate_binary': 'bureau_credit_enddate_percentage'}, inplace=True)
         features = features.merge(g, on=['SK_ID_CURR'], how='left')
 
+        g = groupby['bureau_credit_active_binary'].agg('sum').reset_index()
+        g.rename(index=str, columns={'bureau_credit_active_count': 'bureau_credit_active_binary'}, inplace=True)
         features = features.merge(g, on=['SK_ID_CURR'], how='left')
+
+        g = groupby['SK_ID_BUREAU'].agg('nunique').reset_index()
+        g.rename(index=str, columns={'SK_ID_BUREAU': 'bureau_query_count'}, inplace=True)
+        features = features.merge(g, on=['SK_ID_CURR'], how='left')
+
+        func = partial(BureauFeatures.generate_features,
+                       agg_periods=self.last_k_agg_periods,
+                       trend_periods=self.last_k_trend_periods)
+        # g = parallel_apply(groupby, func, index_name='SK_ID_CURR', num_workers=self.num_workers).reset_index()
+        g = groupby.apply(func).reset_index()
+        features = features.merge(g, on='SK_ID_CURR', how='left')
 
         features['bureau_average_of_past_loans_per_type'] = \
             features['bureau_number_of_past_loans'] / features['bureau_number_of_loan_types']
@@ -338,6 +361,43 @@ class BureauFeatures(BasicHandCraftedFeatures):
 
         self.features = features
         return self
+
+    @staticmethod
+    def generate_features(gr, agg_periods, trend_periods):
+        agg = BureauFeatures.last_k_bureau_features(gr, agg_periods)
+        trend = BureauFeatures.trend_in_last_k_bureau_features(gr, trend_periods)
+        features = {**agg, **trend}
+        return pd.Series(features)
+
+    @staticmethod
+    def last_k_bureau_features(gr, periods):
+        gr_ = gr.copy()
+        gr_['days_credit_diff'].iloc[0] = 0
+
+        features = {}
+        for period in periods:
+            gr_period = gr_.iloc[:period]
+
+            features = add_trend_feature(features, gr_period,
+                                         'days_credit_diff',
+                                         '{}_period_trend_'.format(period))
+        return features
+
+    @staticmethod
+    def trend_in_last_k_bureau_features(gr, periods):
+        gr_ = gr.copy()
+        gr_['days_credit_diff'].iloc[0] = 0
+
+        features = {}
+        for period in periods:
+            gr_period = gr_.iloc[:period]
+
+            features = add_features_in_group(features, gr_period,
+                                             'days_credit_diff',
+                                             ['mean', 'max', 'min', 'std', 'median', 'skew', 'kurt', 'iqr'],
+                                             'last_{}_'.format(period))
+
+        return features
 
 
 class CreditCardBalanceFeatures(BasicHandCraftedFeatures):
@@ -394,7 +454,7 @@ class CreditCardBalanceFeatures(BasicHandCraftedFeatures):
             'credit_card_drawings_total']
 
         features['credit_card_installments_per_loan'] = (
-            features['credit_card_total_installments'] / features['credit_card_number_of_loans'])
+                features['credit_card_total_installments'] / features['credit_card_number_of_loans'])
 
         return features
 
@@ -446,12 +506,12 @@ class PreviousApplicationFeatures(BasicHandCraftedFeatures):
         prev_app_sorted_groupby = prev_app_sorted.groupby(by=['SK_ID_CURR'])
 
         prev_app_sorted['previous_application_prev_was_approved'] = (
-            prev_app_sorted['NAME_CONTRACT_STATUS'] == 'Approved').astype('int')
+                prev_app_sorted['NAME_CONTRACT_STATUS'] == 'Approved').astype('int')
         g = prev_app_sorted_groupby['previous_application_prev_was_approved'].last().reset_index()
         features = features.merge(g, on=['SK_ID_CURR'], how='left')
 
         prev_app_sorted['previous_application_prev_was_refused'] = (
-            prev_app_sorted['NAME_CONTRACT_STATUS'] == 'Refused').astype('int')
+                prev_app_sorted['NAME_CONTRACT_STATUS'] == 'Refused').astype('int')
         g = prev_app_sorted_groupby['previous_application_prev_was_refused'].last().reset_index()
         features = features.merge(g, on=['SK_ID_CURR'], how='left')
 
@@ -638,7 +698,7 @@ def add_features_in_group(features, gr_, feature_name, aggs, prefix):
             features['{}{}_iqr'.format(prefix, feature_name)] = iqr(gr_[feature_name])
         elif agg == 'median':
             features['{}{}_median'.format(prefix, feature_name)] = gr_[feature_name].median()
-        return features
+    return features
 
 
 def add_trend_feature(features, gr, feature_name, prefix):
