@@ -346,8 +346,7 @@ class BureauFeatures(BasicHandCraftedFeatures):
         func = partial(BureauFeatures.generate_features,
                        agg_periods=self.last_k_agg_periods,
                        trend_periods=self.last_k_trend_periods)
-        # g = parallel_apply(groupby, func, index_name='SK_ID_CURR', num_workers=self.num_workers).reset_index()
-        g = groupby.apply(func).reset_index()
+        g = parallel_apply(groupby, func, index_name='SK_ID_CURR', num_workers=self.num_workers).reset_index()
         features = features.merge(g, on='SK_ID_CURR', how='left')
 
         features['bureau_average_of_past_loans_per_type'] = \
