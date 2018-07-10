@@ -346,7 +346,7 @@ class BureauFeatures(BasicHandCraftedFeatures):
         func = partial(BureauFeatures.generate_features,
                        agg_periods=self.last_k_agg_periods,
                        trend_periods=self.last_k_trend_periods)
-        g = parallel_apply(groupby, func, index_name='SK_ID_CURR', num_workers=self.num_workers).reset_index()
+        g = groupby.apply(func).reset_index()
         features = features.merge(g, on='SK_ID_CURR', how='left')
 
         features['bureau_average_of_past_loans_per_type'] = \
@@ -453,7 +453,7 @@ class CreditCardBalanceFeatures(BasicHandCraftedFeatures):
             'credit_card_drawings_total']
 
         features['credit_card_installments_per_loan'] = (
-                features['credit_card_total_installments'] / features['credit_card_number_of_loans'])
+            features['credit_card_total_installments'] / features['credit_card_number_of_loans'])
 
         return features
 
@@ -505,12 +505,12 @@ class PreviousApplicationFeatures(BasicHandCraftedFeatures):
         prev_app_sorted_groupby = prev_app_sorted.groupby(by=['SK_ID_CURR'])
 
         prev_app_sorted['previous_application_prev_was_approved'] = (
-                prev_app_sorted['NAME_CONTRACT_STATUS'] == 'Approved').astype('int')
+            prev_app_sorted['NAME_CONTRACT_STATUS'] == 'Approved').astype('int')
         g = prev_app_sorted_groupby['previous_application_prev_was_approved'].last().reset_index()
         features = features.merge(g, on=['SK_ID_CURR'], how='left')
 
         prev_app_sorted['previous_application_prev_was_refused'] = (
-                prev_app_sorted['NAME_CONTRACT_STATUS'] == 'Refused').astype('int')
+            prev_app_sorted['NAME_CONTRACT_STATUS'] == 'Refused').astype('int')
         g = prev_app_sorted_groupby['previous_application_prev_was_refused'].last().reset_index()
         features = features.merge(g, on=['SK_ID_CURR'], how='left')
 
