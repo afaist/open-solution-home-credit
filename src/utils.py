@@ -3,7 +3,9 @@ import os
 import random
 import sys
 import multiprocessing as mp
+from functools import reduce
 
+import glob
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -115,3 +117,36 @@ def parallel_apply(groups, func, index_name='Index', num_workers=1, chunk_size=1
     features.index = indeces
     features.index.name = index_name
     return features
+
+
+def read_oof_predictions(prediction_dir, train_filepath, id_column, target_column):
+    labels = pd.read_csv(train_filepath, usecols=[id_column, target_column])
+
+    filepaths_train, filepaths_test = [], []
+    for filepath in sorted(glob.glob('{}/*'.format(prediction_dir))):
+        if filepath.endswith('_oof_train.csv'):
+            filepaths_train.append(filepath)
+        elif filepath.endswith('_oof_test.csv'):
+            filepaths_test.append(filepath)
+
+    train_dfs = []
+    for filepath in filepaths_train:
+        train_dfs.append(pd.read_csv(filepath))
+    train_dfs = reduce(lambda df1, df2: pd.merge(df1, df2, on=[id_column, 'fold_id']), train_dfs)
+    train_dfs.columns = _clean_columns(train_dfs, keep_colnames=[id_column, 'fold_id'])
+    train_dfs = pd.merge(train_dfs, labels, on=[id_column])
+
+    test_dfs = []
+    for filepath in filepaths_test:
+        test_dfs.append(pd.read_csv(filepath))
+    test_dfs = reduce(lambda df1, df2: pd.merge(df1, df2, on=[id_column, 'fold_id']), test_dfs)
+    test_dfs.columns = _clean_columns(test_dfs, keep_colnames=[id_column, 'fold_id'])
+    return train_dfs, test_dfs
+
+
+def _clean_columns(df, keep_colnames):
+    new_colnames = keep_colnames
+    feature_colnames = df.drop(keep_colnames, axis=1).columns
+    for i, colname in enumerate(feature_colnames):
+        new_colnames.append('model_{}'.format(i))
+    return new_colnames

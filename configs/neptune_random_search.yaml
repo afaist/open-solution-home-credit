@@ -1,7 +1,7 @@
 project: ORGANIZATION/home-credit
 
 name: home-credit-default-risk
-tags: [solution-5]
+tags: [solution-3]
 
 metric:
   channel: 'ROC_AUC'
@@ -28,6 +28,7 @@ parameters:
   POS_CASH_balance_filepath:      YOUR/PATH/TO/POS_CASH_balance.csv
   previous_application_filepath:  YOUR/PATH/TO/previous_application.csv
   sample_submission_filepath:     YOUR/PATH/TO/sample_submission.csv
+  first_level_oof_predictions_dir: YOUR/PATH/TO/oof_predictions
   experiment_directory:           YOUR/PATH/WORKDIR
 
 # Kaggle

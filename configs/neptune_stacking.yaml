@@ -1,7 +1,7 @@
 project: ORGANIZATION/home-credit
 
 name: home-credit-default-risk
-tags: [solution-5]
+tags: [solution-4, dev]
 
 metric:
   channel: 'ROC_AUC'
@@ -28,11 +28,12 @@ parameters:
   POS_CASH_balance_filepath:      YOUR/PATH/TO/POS_CASH_balance.csv
   previous_application_filepath:  YOUR/PATH/TO/previous_application.csv
   sample_submission_filepath:     YOUR/PATH/TO/sample_submission.csv
+  first_level_oof_predictions_dir: YOUR/PATH/TO/oof_predictions
   experiment_directory:           YOUR/PATH/WORKDIR
 
 # Kaggle
   kaggle_api: 0
-  kaggle_message: 'solution-5'
+  kaggle_message: 'solution-4'
 
 # Data preparation
   n_cv_splits: 5
@@ -52,8 +53,6 @@ parameters:
 # Feature Extraction
   installments__last_k_trend_periods: '[10, 50, 100, 500]'
   installments__last_k_agg_periods: '[1, 5, 10, 50, 100, 500]'
-  bureau__last_k_trend_periods: '[10, 50]'
-  bureau__last_k_agg_periods: '[5, 10, 20, 50]'
   application_aggregation__use_diffs_only: True
   use_nan_count: True
 
