@@ -28,7 +28,7 @@ parameters:
   POS_CASH_balance_filepath:      ../input/POS_CASH_balance.csv
   previous_application_filepath:  ../input/previous_application.csv
   sample_submission_filepath:     ../input/sample_submission.csv
-  experiment_directory:           /kaggle/working/
+  experiment_directory:           /kaggle/working/result
 
 # Kaggle
   kaggle_api: 0
