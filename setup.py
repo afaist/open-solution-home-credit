@@ -7,6 +7,6 @@ setup(
     author='open-solution-home-credit',
     author_email='example@example.com',
     packages=['src'],  #same as name
-    package_data={'opensolutionhomecredit': ['kaggle.yaml']},
+    package_data={'src': ['kaggle.yaml']},
     install_requires=['neptune-cli','steppy','attrdict','click'],
 )
