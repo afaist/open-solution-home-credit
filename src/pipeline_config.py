@@ -6,7 +6,7 @@ from deepsense import neptune
 from .utils import read_params, parameter_eval
 
 ctx = neptune.Context()
-params = read_params(ctx, fallback_file='../neptune.yaml')
+params = read_params(ctx, fallback_file='/opt/conda/lib/python3.6/site-packages/src/kaggle.yaml')
 
 RANDOM_SEED = 90210
 DEV_SAMPLE_SIZE = 1000
