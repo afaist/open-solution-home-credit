@@ -263,6 +263,41 @@ def make_submission(submission_filepath):
               .format(submission_filepath, params.kaggle_message))
 
 
+
+def reduce_mem_usage(df):
+    """ iterate through all the columns of a dataframe and modify the data type
+        to reduce memory usage.        
+    """
+    start_mem = df.memory_usage().sum() / 1024**2
+    print('Memory usage of dataframe is {:.2f} MB'.format(start_mem))
+    
+    for col in df.columns:
+        col_type = df[col].dtype
+        
+        if col_type != object:
+            c_min = df[col].min()
+            c_max = df[col].max()
+            if str(col_type)[:3] == 'int':
+                if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
+                    df[col] = df[col].astype(np.int8)
+                elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
+                    df[col] = df[col].astype(np.int16)
+                elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
+                    df[col] = df[col].astype(np.int32)
+                elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
+                    df[col] = df[col].astype(np.int64)  
+            else:
+                if c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
+                    df[col] = df[col].astype(np.float32)
+                else:
+                    df[col] = df[col].astype(np.float64)
+
+    end_mem = df.memory_usage().sum() / 1024**2
+    print('Memory usage after optimization is: {:.2f} MB'.format(end_mem))
+    print('Decreased by {:.1f}%'.format(100 * (start_mem - end_mem) / start_mem))
+    
+    return df
+
 def _read_data(dev_mode, read_train=True, read_test=False):
     logger.info('Reading data...')
     if dev_mode:
@@ -274,17 +309,17 @@ def _read_data(dev_mode, read_train=True, read_test=False):
     raw_data = {}
 
     if read_train:
-        raw_data['application_train'] = pd.read_csv(params.train_filepath, nrows=nrows)
+        raw_data['application_train'] = reduce_mem_usage(pd.read_csv(params.train_filepath, nrows=nrows))
 
     if read_test:
-        raw_data['application_test'] = pd.read_csv(params.test_filepath, nrows=nrows)
+        raw_data['application_test'] = reduce_mem_usage(pd.read_csv(params.test_filepath, nrows=nrows))
 
-    raw_data['bureau'] = pd.read_csv(params.bureau_filepath, nrows=nrows)
-    raw_data['credit_card_balance'] = pd.read_csv(params.credit_card_balance_filepath, nrows=nrows)
-    raw_data['pos_cash_balance'] = pd.read_csv(params.POS_CASH_balance_filepath, nrows=nrows)
-    raw_data['previous_application'] = pd.read_csv(params.previous_application_filepath, nrows=nrows)
-    raw_data['bureau_balance'] = pd.read_csv(params.bureau_balance_filepath, nrows=nrows)
-    raw_data['installments_payments'] = pd.read_csv(params.installments_payments_filepath, nrows=nrows)
+    raw_data['bureau'] = reduce_mem_usage(pd.read_csv(params.bureau_filepath, nrows=nrows))
+    raw_data['credit_card_balance'] = reduce_mem_usage(pd.read_csv(params.credit_card_balance_filepath, nrows=nrows))
+    raw_data['pos_cash_balance'] = reduce_mem_usage(pd.read_csv(params.POS_CASH_balance_filepath, nrows=nrows))
+    raw_data['previous_application'] = reduce_mem_usage(pd.read_csv(params.previous_application_filepath, nrows=nrows))
+    raw_data['bureau_balance'] = reduce_mem_usage(pd.read_csv(params.bureau_balance_filepath, nrows=nrows))
+    raw_data['installments_payments'] = reduce_mem_usage(pd.read_csv(params.installments_payments_filepath, nrows=nrows))
 
     return AttrDict(raw_data)
 
