@@ -2,11 +2,11 @@ from setuptools import setup
 
 setup(
     name='opensolutionhomecredit',
-    version='1.0.8',
+    version='1.0.9',
     description='open-solution-home-credit',
     author='open-solution-home-credit',
     author_email='example@example.com',
     packages=['src'],  #same as name
     package_data={'src': ['kaggle.yaml']},
-    install_requires=['neptune-cli','steppy','attrdict','click','swifter','toolz','cloudpickle'],
+    install_requires=['neptune-cli','steppy','steppy-toolkit','attrdict','click','swifter','toolz','cloudpickle'],
 )
