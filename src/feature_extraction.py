@@ -209,7 +209,7 @@ class GroupbyMerge(BaseTransformer):
 
 
 class BasicHandCraftedFeatures(BaseTransformer):
-    def __init__(self, num_workers=1, **kwargs):
+    def __init__(self, num_workers=16, **kwargs):
         self.num_workers = num_workers
         self.features = None
 
@@ -488,7 +488,7 @@ class PreviousApplicationFeatures(BasicHandCraftedFeatures):
 
 
 class InstallmentPaymentsFeatures(BasicHandCraftedFeatures):
-    def __init__(self, last_k_agg_periods, last_k_trend_periods, num_workers=1, **kwargs):
+    def __init__(self, last_k_agg_periods, last_k_trend_periods, num_workers=16, **kwargs):
         super().__init__(num_workers=num_workers)
         self.last_k_agg_periods = last_k_agg_periods
         self.last_k_trend_periods = last_k_trend_periods
@@ -509,7 +509,7 @@ class InstallmentPaymentsFeatures(BasicHandCraftedFeatures):
         func = partial(InstallmentPaymentsFeatures.generate_features,
                        agg_periods=self.last_k_agg_periods,
                        trend_periods=self.last_k_trend_periods)
-        g = parallel_apply(groupby, func, index_name='SK_ID_CURR', num_workers=self.num_workers).reset_index()
+        g = parallel_apply(groupby, func, index_name='SK_ID_CURR', num_workers=16).reset_index()
         features = features.merge(g, on='SK_ID_CURR', how='left')
 
         self.features = features
