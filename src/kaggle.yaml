@@ -1,4 +1,4 @@
-project: ORGANIZATION/home-credit
+project: kaggle/home-credit
 
 name: home-credit-default-risk
 tags: [solution-4, dev]
