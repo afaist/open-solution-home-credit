@@ -42,7 +42,7 @@ parameters:
 
 # Execution
   clean_experiment_directory_before_training: 1
-  num_workers: 16
+  num_workers: 10
   verbose: 1
 
 # Preprocessing
