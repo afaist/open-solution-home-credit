@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='opensolutionhomecredit',
-    version='1.2.2',
+    version='1.2.3',
     description='open-solution-home-credit',
     author='open-solution-home-credit',
     author_email='example@example.com',
