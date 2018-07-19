@@ -391,12 +391,12 @@ def _join_features(numerical_features,
                    config, train_mode, suffix,
                    **kwargs):
     if train_mode:
-        persist_output = True
-        cache_output = True
-        load_persisted_output = True
+        persist_output = False
+        cache_output = False
+        load_persisted_output = False
     else:
         persist_output = False
-        cache_output = True
+        cache_output = False
         load_persisted_output = False
 
     feature_joiner = Step(name='feature_joiner{}'.format(suffix),
