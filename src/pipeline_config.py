@@ -348,7 +348,7 @@ SOLUTION_CONFIG = AttrDict({
                   'nthread': parameter_eval(params.num_workers),
                   'number_boosting_rounds': parameter_eval(params.lgbm__number_boosting_rounds),
                   'early_stopping_rounds': parameter_eval(params.lgbm__early_stopping_rounds),
-                  'verbose': parameter_eval(params.verbose),
+                  'verbose': parameter_eval(params.lgbm__verbose),
                   },
 
     'xgboost': {'booster': parameter_eval(params.xgb__booster),
