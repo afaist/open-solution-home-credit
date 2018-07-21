@@ -107,7 +107,7 @@ def chunk_groups(groupby_object, chunk_size):
 def parallel_apply(groups, func, index_name='Index', num_workers=1, chunk_size=15000):
     n_chunks = np.ceil(1.0 * groups.ngroups / chunk_size)
     indeces, features = [], []
-    print('num_workers',str(num_workers))
+    print('exec chunk_size:' + str(chunk_size) + ' num_workers:' + str(num_workers))
     for index_chunk, groups_chunk in tqdm(chunk_groups(groups, chunk_size), total=n_chunks):
         with mp.pool.Pool(num_workers) as executor:
             features_chunk = executor.map(func, groups_chunk)
