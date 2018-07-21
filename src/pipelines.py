@@ -17,17 +17,23 @@ def lightGBM(config, train_mode, suffix=''):
                                                              load_persisted_output=False)
         light_gbm = blocks.classifier_light_gbm((features, features_valid),
                                                 config,
-                                                train_mode, suffix, persist_output = False,
+                                                train_mode, suffix, 
+                                                persist_output = False,
                                                 cache_output = False,
                                                 load_persisted_output = False)
     else:
         features = blocks.feature_extraction(config,
                                              train_mode,
                                              suffix,
-                                             cache_output=False)
+                                             persist_output = False,
+                                             cache_output = False,
+                                             load_persisted_output = False)
         light_gbm = blocks.classifier_light_gbm(features,
                                                 config,
-                                                train_mode, suffix)
+                                                train_mode, suffix,
+                                                persist_output = False,
+                                                cache_output = False,
+                                                load_persisted_output = False)
 
     return light_gbm
 
