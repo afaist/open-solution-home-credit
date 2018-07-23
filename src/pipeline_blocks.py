@@ -44,12 +44,18 @@ def classifier_light_gbm(features, config, train_mode, suffix, **kwargs):
                                           'y_valid': E('application', 'y_valid'),
                                           }),
                          force_fitting=True,
+                         persist_output = False,
+                         cache_output = False,
+                         load_persisted_output = False,
                          experiment_directory=config.pipeline.experiment_directory,
                          **kwargs)
     else:
         light_gbm = Step(name=model_name,
                          transformer=LightGBM(name=model_name, **config.light_gbm),
                          input_steps=[features],
+                         persist_output = False,
+                         cache_output = False,
+                         load_persisted_output = False,
                          adapter=Adapter({'X': E(features.name, 'features')}),
                          experiment_directory=config.pipeline.experiment_directory,
                          **kwargs)
