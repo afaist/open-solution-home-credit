@@ -80,6 +80,7 @@ parameters:
   lgbm__reg_alpha: 0.0
   lgbm__scale_pos_weight: 1
   lgbm__is_unbalance: False
+  lgbm__verbose: 100
 
 # XGBoost
   xgb_random_search_runs: 0
