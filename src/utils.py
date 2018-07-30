@@ -104,7 +104,7 @@ def chunk_groups(groupby_object, chunk_size):
             yield index_chunk_, group_chunk_
 
 
-def parallel_apply(groups, func, index_name='Index', num_workers=1, chunk_size=15000):
+def parallel_apply(groups, func, index_name='Index', num_workers=1, chunk_size=20000):
     n_chunks = np.ceil(1.0 * groups.ngroups / chunk_size)
     indeces, features = [], []
     print('exec chunk_size:' + str(chunk_size) + ' num_workers:' + str(num_workers))
